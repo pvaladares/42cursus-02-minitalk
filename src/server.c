@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/28 12:21:54 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/28 16:15:52 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,55 +21,69 @@
   - Checksum?
 */
 
+/*
+  Functions shows the server PID so user can type it
+  when executing the client
+*/
 void	server_show_pid(void)
 {
-	ft_printf("[PID = %d] Server started\n", getpid());
+	ft_printf("[PID = %d] server started\n", getpid());
 }
 
 /*
-  Function catches the user keyboard (CTRL+C),
-  prints a message, and then proceeds with the default
-  action which is to terminate the process
+  Function catches the user keyboard (CTRL+C == SIGINT == 2)
+  prints a message and exits the program
 */
-void	server_show_ended(int num)
+void	server_show_user_ended(void)
 {
-	if (num == SIGINT)
-	{
-		ft_printf("\n[PID = %d] Server ended - user instruction\n", getpid());
-		exit(EXIT_USER_INTERACTION);
-	}
+	ft_printf("\n[PID = %d] server ended : user instruction\n", getpid());
+	exit(EXIT_USER_INTERACTION);
+}
+
+void	server_show_kill_error(void)
+{
+	ft_printf("Server error : kill()\n");
+	exit(EXIT_FAILURE);
 }
 
 /*
-  Function catch the signals received from client that represent the status 
+  Function catches signals received from client that represents the status 
   on each bit (either 0 or 1), using SIGUSR1 and SIGUSR2
   For cleaner code a definition was used, refer to the header file
+  Added functionality to handle several clients at the same type, now the 
+  bits and char received are arrays and the client PID is the index
+  This way the server knows from which client the signals was received
+  querying the sigaction structure (si_pid)
+  Variables declared as static are initialized with zero, and after each 
+  8 bits received they are again re-initialized to zero
+  For each bit received from client, the server sends an ACK signal
+  (then the client should only send the next bit after this ACK signal)
 */
-// void handler(int, siginfo_t *info, ucontext_t *uap);
 void	server_handler(int num, siginfo_t *info, void *context)
 {
-	static int	bits_received;
-	static char	char_received;
+	static int	bits_received[PID_MAX];
+	static int	char_received[PID_MAX];
+	size_t		client_pid;
 
 	(void)info;
 	(void)context;
-	if (bits_received == 0)
-		char_received = 0;
-	if (num == BIT_0_OFF)
+	client_pid = info->si_pid;
+	if (bits_received[client_pid] == 0)
+		char_received[client_pid] = 0;
+	if (num == SIGINT)
+		server_show_user_ended();
+	if (num == BIT_0_OFF || num == BIT_1_ON)
 	{
-		ft_printf("0");
-		kill(info->si_pid, SERVER_REPLY_OK);
+		if (num == BIT_1_ON)
+			char_received[client_pid] |= 1 << (7 - bits_received[client_pid]);
+		if (kill(client_pid, SERVER_REPLY_ACK) == -1)
+			server_show_kill_error();
 	}
-	else if (num == BIT_1_ON)
+	if (++bits_received[client_pid] == 8)
 	{
-		ft_printf("1");
-		char_received |= 1 << (7 - bits_received);
-		kill(info->si_pid, SERVER_REPLY_OK);
-	}
-	if (++bits_received == 8)
-	{
-		ft_printf("Char received = [%c]\n", char_received);
-		bits_received = 0;
+		ft_printf("Char received %c %d\n", char_received[client_pid], char_received[client_pid]);
+		bits_received[client_pid] = 0;
+		char_received[client_pid] = 0;
 	}
 }
 
@@ -81,29 +95,30 @@ void	server_handler(int num, siginfo_t *info, void *context)
 */
 int	main(void)
 {
-	struct sigaction	s_server;
+	struct sigaction	s_server_sigaction;
 	//sigset_t			block_mask;
 
-	s_server.sa_sigaction = server_handler;
-	s_server.sa_mask = 0;
-	s_server.sa_flags = SA_SIGINFO;
+	server_show_pid();
+	s_server_sigaction.sa_sigaction = server_handler;
+	//s_server_sigaction.sa_mask = 0;
+	s_server_sigaction.sa_flags = SA_SIGINFO;
 	//sigemptyset(&block_mask);
 	//sigaddset(&block_mask, SIGINT);
 	//sigaddset(&block_mask, SIGQUIT);
 	//sa_signal.sa_handler = 0;
 	//sa_signal.sa_flags = SA_SIGINFO;
 	//sa_signal.sa_mask = block_mask;
-	sigaction(SIGUSR1, &s_server, NULL);
-	sigaction(SIGUSR2, &s_server, NULL);
+	sigaction(BIT_0_OFF, &s_server_sigaction, NULL);
+	sigaction(BIT_1_ON, &s_server_sigaction, NULL);
+	sigaction(SIGINT, &s_server_sigaction, NULL);
 	//sigaction(SIGINT, &sa_signal, NULL);
 	//signal(SIGINT, server_show_ended);
 	//signal(BIT_0_OFF, server_handler);
 	//signal(BIT_1_ON, server_handler);
-	server_show_pid();
 	while (1)
 	{
 		pause();
-		sleep(1);
+		usleep(50);
 	}
-	return (0);
+	exit(EXIT_SUCCESS);
 }
