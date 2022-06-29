@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 14:01:45 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/29 01:11:59 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/29 10:06:45 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@ void	client_handler(int num, siginfo_t *info, void *context)
 	(void)info;
 	(void)context;
 	if (num == SERVER_REPLY_ACK)
-		ft_printf("server ack signal\n");
+		ft_printf("server ack signal received\n");
 	else if (num == SERVER_REPLY_ERROR)
-		ft_printf("server error: server sent error signal\n");
+		ft_printf("server error: error signal received\n");
 }
 
 void	client_send_byte(int pid_server, char c)
@@ -27,7 +27,7 @@ void	client_send_byte(int pid_server, char c)
 	int		shift;
 	char	bit;
 
-	//usleep(300);
+	usleep(WAIT_US);
 	shift = 7;
 	while (shift >= 0)
 	{
@@ -51,8 +51,7 @@ void	client_send_byte(int pid_server, char c)
 			ft_printf("1");
 		}
 		shift--;
-		//usleep(500);
-		//pause();
+		pause();
 	}
 }
 
@@ -72,7 +71,7 @@ void	client_send_message(int server_pid, char *str)
 		i = 0;
 		while (str[i] != '\0')
 			client_send_byte(server_pid, str[i++]);
-		//client_send_byte(server_pid, '\0');
+		client_send_byte(server_pid, '\0');
 	}
 }
 

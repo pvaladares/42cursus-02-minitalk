@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/29 01:13:57 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/29 10:12:45 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,24 +67,18 @@ void	server_handler(int num, siginfo_t *info, void *context)
 	{
 		ft_printf("1");
 		char_received[client_pid] |= 1 << (7 - bits_received[client_pid]);
-		bits_received[client_pid]++;
 	}
 	else if (num == BIT_0_OFF)
 	{
 		ft_printf("0");
-		bits_received[client_pid]++;
 	}
-	if (kill(client_pid, SERVER_REPLY_ACK) < 0)
+	if (++bits_received[client_pid] == 8)
 	{
-		ft_printf("Server error: kill()\n");
-		exit(EXIT_FAILURE);
-	}
-	if (bits_received[client_pid] == 8)
-	{
-		ft_printf("%c", char_received[client_pid]);
+		ft_printf("%c\n", char_received[client_pid]);
 		bits_received[client_pid] = 0;
 		char_received[client_pid] = 0;
 	}
+	kill(client_pid, SERVER_REPLY_ACK);
 }
 
 /*
@@ -107,10 +101,10 @@ int	main(void)
 		ft_printf("server error: sigaction()");
 		exit(EXIT_FAILURE);
 	}
-	ft_printf("[PID = %d] server started\n", getpid());
+	ft_printf("server started (PID = %d)\n", getpid());
 	while (1)
 	{
-		pause();//usleep(500);
+		pause();
 	}
 	exit(EXIT_SUCCESS);
 }
