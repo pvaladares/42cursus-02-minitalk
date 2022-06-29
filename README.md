@@ -1,6 +1,115 @@
 # 42cursus-02-minitalk
 The purpose of this project is to code a small data exchange program using UNIX signals.
 
+# Allowed libraries
+
+The subject states that [libft](https://github.com/pvaladares/42cursus-00-Libft) library can be used.
+> You can definitely use your libft.
+
+Reading the subject it can be understood what functions may be the most useful to fulfill the requirements, as shown below:
+> The server must be started first. After its launch, it has to print its PID.
+> - The client takes two parameters:
+>     - The server PID.
+>     - The string to send.
+- `ft_atoi()`, to convert the PID argument received from command line to integer type
+
+To be noted that that as per the subject, it cannot be displayed char-by-char on the server-side, it must be displayed the string instead:
+> Once the string has been received, the server must print it.
+
+Therefore, it must be known in advance the length of the message so the server can allocate in memory as required
+- `ft_strlen()`, to know the length of the message to be sent from client to server, and send it to server in advance for proper memory allocation
+- `ft_calloc()`, in order to save the chars being received till the string is completed received on server side, so it can be then displayed as mentioned by the subject:
+
+ft_putchar
+
+
+# Allowed functions
+
+> In order to complete the mandatory part, you are allowed to use the following functions:
+> - write
+> - [ft_printf](https://github.com/pvaladares/42cursus-01-ft_printf) and any equivalent YOU coded 
+> - signal
+```c
+sig_t signal(int sig, sig_t func);
+```
+```man
+This signal() facility is a simplified interface to the more general sigaction(2) facility.
+(...)
+some signals instead cause the process receiving them to be stopped, or are simply discarded
+if the process has not requested otherwise.  
+Except for the SIGKILL and SIGSTOP signals, the signal() function allows for a signal to be 
+caught, to be ignored, or to generate an interrupt.
+These signals are defined in the file <signal.h>:
+
+           Name             Default Action       Description
+     1     SIGHUP           terminate process    terminal line hangup
+     2     SIGINT           terminate process    interrupt program 
+(...)
+     30    SIGUSR1          terminate process    User defined signal 1
+     31    SIGUSR2          terminate process    User defined signal 2  
+
+The sig argument specifies which signal was received.  
+The func procedure allows a user to choose the action upon receipt of a signal.
+
+The handled signal is unblocked when the function returns and the process continues 
+from where it left off when the signal occurred.
+
+For some system calls, if a signal is caught while the call is executing and the call is 
+prematurely terminated, the call is automatically restarted.  
+Any handler installed with signal(3) will have the SA_RESTART flag set, 
+meaning that any restartable system call will not return on receipt of a signal.  
+
+The affected system calls include read(2), write(2), sendto(2), recvfrom(2), sendmsg(2), 
+and recvmsg(2) on a communications channel or a low speed device and during a ioctl(2) or wait(2).
+However, calls that have already committed are not restarted, but instead return a partial success
+(for example, a short read count).  
+These semantics could be changed with siginterrupt(3).
+     
+See sigaction(2) for a list of functions that are considered safe for use in signal handlers.
+
+The previous action is returned on a successful call.  
+Otherwise, SIG_ERR is returned and the global variable errno is set to indicate the error.
+     
+macOS 12.4                      June 7, 2004                      macOS 12.4
+```
+
+
+> - sigemptyset
+> - sigaddset
+```c
+int sigemptyset(sigset_t *set);
+int sigaddset(sigset_t *set, int signo);
+```
+```man
+These functions manipulate signal sets, stored in a sigset_t.
+sigemptyset() must be called for every object of type sigset_t before any other use of the object.
+
+The sigemptyset() function initializes a signal set to be empty.
+
+The sigaddset() function adds the specified signal signo to the signal set.
+
+These functions are provided as macros in the include file <signal.h>.
+Actual functions are available if their names are undefined (with #undef name).
+
+Functions return 0.
+
+macOS 12.4          June 4, 1993          macOS 12.4
+```
+
+```man
+
+```
+> - sigaction
+> - kill
+> - getpid
+> - malloc
+> - free
+> - pause
+> - sleep
+> - usleep
+> - exit
+
+
 
 # Considerations about the [subject](pdf/42cursus_Minitalk_v2.pdf)
 
