@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/28 16:15:52 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/29 01:13:57 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,6 @@
 */
 
 /*
-  Functions shows the server PID so user can type it
-  when executing the client
-*/
-void	server_show_pid(void)
-{
-	ft_printf("[PID = %d] server started\n", getpid());
-}
-
-/*
   Function catches the user keyboard (CTRL+C == SIGINT == 2)
   prints a message and exits the program
 */
@@ -42,7 +33,7 @@ void	server_show_user_ended(void)
 
 void	server_show_kill_error(void)
 {
-	ft_printf("Server error : kill()\n");
+	ft_printf("Server error: kill()\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -70,18 +61,27 @@ void	server_handler(int num, siginfo_t *info, void *context)
 	client_pid = info->si_pid;
 	if (bits_received[client_pid] == 0)
 		char_received[client_pid] = 0;
-	if (num == SIGINT)
-		server_show_user_ended();
-	if (num == BIT_0_OFF || num == BIT_1_ON)
+	// if (num == SIGINT)
+	// 	server_show_user_ended();
+	if (num == BIT_1_ON)
 	{
-		if (num == BIT_1_ON)
-			char_received[client_pid] |= 1 << (7 - bits_received[client_pid]);
-		if (kill(client_pid, SERVER_REPLY_ACK) == -1)
-			server_show_kill_error();
+		ft_printf("1");
+		char_received[client_pid] |= 1 << (7 - bits_received[client_pid]);
+		bits_received[client_pid]++;
 	}
-	if (++bits_received[client_pid] == 8)
+	else if (num == BIT_0_OFF)
 	{
-		ft_printf("Char received %c %d\n", char_received[client_pid], char_received[client_pid]);
+		ft_printf("0");
+		bits_received[client_pid]++;
+	}
+	if (kill(client_pid, SERVER_REPLY_ACK) < 0)
+	{
+		ft_printf("Server error: kill()\n");
+		exit(EXIT_FAILURE);
+	}
+	if (bits_received[client_pid] == 8)
+	{
+		ft_printf("%c", char_received[client_pid]);
 		bits_received[client_pid] = 0;
 		char_received[client_pid] = 0;
 	}
@@ -95,30 +95,22 @@ void	server_handler(int num, siginfo_t *info, void *context)
 */
 int	main(void)
 {
-	struct sigaction	s_server_sigaction;
-	//sigset_t			block_mask;
+	struct sigaction	s_server;
 
-	server_show_pid();
-	s_server_sigaction.sa_sigaction = server_handler;
-	//s_server_sigaction.sa_mask = 0;
-	s_server_sigaction.sa_flags = SA_SIGINFO;
-	//sigemptyset(&block_mask);
-	//sigaddset(&block_mask, SIGINT);
-	//sigaddset(&block_mask, SIGQUIT);
-	//sa_signal.sa_handler = 0;
-	//sa_signal.sa_flags = SA_SIGINFO;
-	//sa_signal.sa_mask = block_mask;
-	sigaction(BIT_0_OFF, &s_server_sigaction, NULL);
-	sigaction(BIT_1_ON, &s_server_sigaction, NULL);
-	sigaction(SIGINT, &s_server_sigaction, NULL);
-	//sigaction(SIGINT, &sa_signal, NULL);
-	//signal(SIGINT, server_show_ended);
-	//signal(BIT_0_OFF, server_handler);
-	//signal(BIT_1_ON, server_handler);
+	s_server.sa_sigaction = server_handler;
+	sigemptyset(&s_server.sa_mask);
+	s_server.sa_flags = SA_SIGINFO;
+	if (sigaction(BIT_0_OFF, &s_server, NULL) < 0
+		|| sigaction(BIT_1_ON, &s_server, NULL) < 0)
+	//	|| sigaction(SIGINT, &s_server, NULL) < 0)
+	{
+		ft_printf("server error: sigaction()");
+		exit(EXIT_FAILURE);
+	}
+	ft_printf("[PID = %d] server started\n", getpid());
 	while (1)
 	{
-		pause();
-		usleep(50);
+		pause();//usleep(500);
 	}
 	exit(EXIT_SUCCESS);
 }
