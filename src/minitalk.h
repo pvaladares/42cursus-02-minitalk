@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:57:25 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/29 10:06:14 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/29 10:48:38 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,8 @@
 
   #define PID_MAX         99999
 */
-# define PID_MAX					99999
+# define PID_MAX				99999
 
-# define WAIT_US					150 //usleep(WAIT_US)
+# define WAIT_US				100 //usleep(WAIT_US)
 
 #endif

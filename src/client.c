@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 14:01:45 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/29 10:06:45 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/29 12:29:26 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,15 @@
 
 void	client_handler(int num, siginfo_t *info, void *context)
 {
+	static int	bits_counter;
+
 	(void)info;
 	(void)context;
-	if (num == SERVER_REPLY_ACK)
-		ft_printf("server ack signal received\n");
+	if (num == SERVER_REPLY_ACK && ++bits_counter)
+		ft_printf("server message: ack signal received\n");
 	else if (num == SERVER_REPLY_ERROR)
-		ft_printf("server error: error signal received\n");
+		ft_printf("server message: total chars received [%d]\n",
+			bits_counter / 8);
 }
 
 void	client_send_byte(int pid_server, char c)
@@ -27,10 +30,10 @@ void	client_send_byte(int pid_server, char c)
 	int		shift;
 	char	bit;
 
-	usleep(WAIT_US);
 	shift = 7;
 	while (shift >= 0)
 	{
+		usleep(WAIT_US);
 		bit = (c >> shift) & 1;
 		if (bit == 0)
 		{
@@ -39,16 +42,14 @@ void	client_send_byte(int pid_server, char c)
 				ft_printf("client error: kill()\n");
 				exit(EXIT_FAILURE);
 			}
-			ft_printf("0");
 		}
 		else if (bit == 1)
 		{
 			if (kill(pid_server, BIT_1_ON) < 0)
 			{
-			ft_printf("client error: kill()\n");
-			exit(EXIT_FAILURE);
+				ft_printf("client error: kill()\n");
+				exit(EXIT_FAILURE);
 			}
-			ft_printf("1");
 		}
 		shift--;
 		pause();
@@ -94,9 +95,11 @@ int	main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	server_pid = atoi(argv[1]);
+	//
 	s_client.sa_sigaction = client_handler;
 	sigemptyset(&s_client.sa_mask);
 	s_client.sa_flags = SA_SIGINFO;
+	//
 	if (sigaction(SERVER_REPLY_ACK, &s_client, NULL) < 0
 		|| sigaction(SERVER_REPLY_ERROR, &s_client, NULL) < 0)
 	{
