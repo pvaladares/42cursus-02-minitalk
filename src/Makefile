@@ -6,7 +6,7 @@
 #    By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/07 18:12:40 by pvaladar          #+#    #+#              #
-#    Updated: 2022/06/29 18:07:16 by pvaladar         ###   ########.fr        #
+#    Updated: 2022/06/30 11:26:19 by pvaladar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@
 # =============================================================================
 
 CC			= cc
-CFLAGS	= -Wall -Wextra -Werror -g#-fsanitize=address,undefined
+CFLAGS	= -Wall -Wextra -Werror -g -fsanitize=address,undefined
 
 RM			= /bin/rm -f
 

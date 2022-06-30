@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/30 11:13:27 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/30 13:48:33 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,42 +48,67 @@ void	server_handler(int num, siginfo_t *info, void *context)
 	static int	info_received;
 	static char	flag_length_received;
 	static char	*message;
+	static int	i;
 
-	usleep(WAIT_US);
+	//usleep(WAIT_US);
 	(void)info;
 	(void)context;
 	client_pid = info->si_pid;
 	if (bits_received == 0)
 		info_received = 0;
-	else if (num == BIT_1_ON && flag_length_received == 0)
-		info_received |= 1 << (((sizeof(int) * 4) - 1) - bits_received);
+	if (num == BIT_1_ON && flag_length_received == 0)
+		info_received |= 1 << (((sizeof(int) * 8) - 1) - bits_received);
 	else if (num == BIT_1_ON && flag_length_received == 1)
-		info_received |= 1 << (7 - bits_received);
-	if (++bits_received == sizeof(int) * 4 && flag_length_received == 0)
+		info_received |= 1 << ((sizeof(char) * 8 - 1) - bits_received);
+	bits_received++;
+	if (bits_received == sizeof(int) * 8 && flag_length_received == 0)
 	{
 		flag_length_received = 1;
-		ft_printf("Length of message = %d\n", info_received);
+		//ft_printf("received length of message = [%d]\n", info_received);
+		ft_putstr("received length of message = ");
+		ft_putnbr(info_received);
+		message = ft_calloc(info_received + 1, sizeof(char));
+		if (message == NULL)
+			exit(EXIT_FAILURE);
+		message[info_received] = '\0';
 		bits_received = 0;
-		info_received = 0;
 	}
-	else if (bits_received == 8 && flag_length_received == 1)
+	if (bits_received == 8 && flag_length_received == 1 && message != NULL)
 	{
-		ft_printf("%c", info_received);
+		message[i] = info_received;
+		//ft_printf("%c", info_received);
 		if (info_received == '\0')
 		{
-
+			//ft_printf("received message = [%s]\n", message);
+			ft_putstr(message);
+			free(message);
+			message = NULL;
+			flag_length_received = 0;
+			i = 0;
+			bits_received = 0;
 			kill(client_pid, SERVER_REPLY_NULL_TERMINATOR);
 		}
 		bits_received = 0;
-		info_received = 0;
-		//flag_length_received = 0;
+		i++;
 	}
 	kill(client_pid, SERVER_REPLY_ACK);
 }
 
 /*
-  Using signal() to define which signals to catch by the handlers
-  The infinite loop will just keep the process running, the pause()
+  This program (server) prints to stdout the PID process and keeps
+  listening for incoming message transmissions
+  
+  Each client should the following sequence:
+         (int)              (char)               (char)
+    length of message -> regular chars -> null string terminator char
+
+  The string message is only printed to stdout when the full string is received
+  For each signal received from client, this program (server) sends
+  a corresponding signal back
+  
+  Using sigaction structure to define which signals to catch by the handler
+  The infinite loop will just keep the process running
+  
   The pause() function causes the calling thread to pause until a
   signal is received
 */
@@ -93,9 +118,9 @@ int	main(void)
 
 	sigemptyset(&s_server.sa_mask);
 	s_server.sa_sigaction = server_handler;
-	s_server.sa_flags = SA_SIGINFO;
+	s_server.sa_flags = SA_SIGINFO | SA_RESTART | SA_NODEFER;
 	configure_sigaction_signals(&s_server);
-	ft_printf("server [PID = %d]: listening for messages\n", getpid());
+	ft_printf("[PID = %d] server started\n", getpid());
 	while (1)
 	{
 		pause();
