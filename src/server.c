@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/30 13:48:33 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/30 16:19:32 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,23 +59,11 @@ void	server_handler(int num, siginfo_t *info, void *context)
 	if (num == BIT_1_ON && flag_length_received == 0)
 		info_received |= 1 << (((sizeof(int) * 8) - 1) - bits_received);
 	else if (num == BIT_1_ON && flag_length_received == 1)
-		info_received |= 1 << ((sizeof(char) * 8 - 1) - bits_received);
-	bits_received++;
-	if (bits_received == sizeof(int) * 8 && flag_length_received == 0)
+		info_received |= 1 << (((sizeof(char) * 8) - 1) - bits_received);
+	bits_received++;	
+	if (bits_received == 8 && flag_length_received == 1)
 	{
-		flag_length_received = 1;
-		//ft_printf("received length of message = [%d]\n", info_received);
-		ft_putstr("received length of message = ");
-		ft_putnbr(info_received);
-		message = ft_calloc(info_received + 1, sizeof(char));
-		if (message == NULL)
-			exit(EXIT_FAILURE);
-		message[info_received] = '\0';
-		bits_received = 0;
-	}
-	if (bits_received == 8 && flag_length_received == 1 && message != NULL)
-	{
-		message[i] = info_received;
+		message[i++] = info_received;
 		//ft_printf("%c", info_received);
 		if (info_received == '\0')
 		{
@@ -89,7 +77,18 @@ void	server_handler(int num, siginfo_t *info, void *context)
 			kill(client_pid, SERVER_REPLY_NULL_TERMINATOR);
 		}
 		bits_received = 0;
-		i++;
+	}
+	if (bits_received == sizeof(int) * 8 && flag_length_received == 0)
+	{
+		flag_length_received = 1;
+		//ft_printf("received length of message = [%d]\n", info_received);
+		ft_putstr("received length of message = ");
+		ft_putnbr(info_received);
+		message = ft_calloc(info_received + 1, sizeof(char));
+		if (message == NULL)
+			exit(EXIT_FAILURE);
+		message[info_received] = '\0';
+		bits_received = 0;
 	}
 	kill(client_pid, SERVER_REPLY_ACK);
 }
