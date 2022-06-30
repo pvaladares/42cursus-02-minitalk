@@ -1,6 +1,200 @@
 # 42cursus-02-minitalk
 The purpose of this project is to code a small data exchange program using UNIX signals.
 
+# Allowed libraries
+
+The subject states that [libft](https://github.com/pvaladares/42cursus-00-Libft) library can be used!
+> You can definitely use your libft.
+
+Reading the subject it can be understood some functions included in the `libft` will be required to fulfill the requirements, as shown below:
+> The server must be started first. After its launch, it has to print its PID.
+> - The client takes two parameters:
+>     - The server PID.
+>     - The string to send.
+- `ft_atoi()`, to convert the PID argument received from command line to integer type for further processing of signal processing, e.g.: `kill()`
+
+To be noted that as per the subject, it cannot be displayed char-by-char on the server-side, it must be displayed the whole message received instead:
+> Once the string has been received, the server must print it.
+
+Therefore, it must be known in advance the length of the message so the server can allocate in memory as required
+- `ft_strlen()`, to know the length of the message to be sent from client to server, and send it to server in advance for proper memory allocation
+- `ft_calloc()`, in order to save the chars being received till the string is completed received on server side, so it can be then displayed
+
+# Allowed functions
+
+Below is made a brief analysis of other functions (in addition to the ones included in the `libft`) that can be used as per the subject.
+
+> In order to complete the mandatory part, you are allowed to use the following functions:
+> - write
+> - [ft_printf](https://github.com/pvaladares/42cursus-01-ft_printf) and any equivalent YOU coded 
+> - signal
+```c
+sig_t signal(int sig, sig_t func);
+```
+```man
+This signal() facility is a simplified interface to the more general sigaction(2) facility.
+(...)
+some signals instead cause the process receiving them to be stopped, or are simply discarded
+if the process has not requested otherwise.  
+Except for the SIGKILL and SIGSTOP signals, the signal() function allows for a signal to be 
+caught, to be ignored, or to generate an interrupt.
+These signals are defined in the file <signal.h>:
+
+           Name             Default Action       Description
+     1     SIGHUP           terminate process    terminal line hangup
+     2     SIGINT           terminate process    interrupt program 
+(...)
+     30    SIGUSR1          terminate process    User defined signal 1
+     31    SIGUSR2          terminate process    User defined signal 2  
+
+The sig argument specifies which signal was received.  
+The func procedure allows a user to choose the action upon receipt of a signal.
+
+The handled signal is unblocked when the function returns and the process continues 
+from where it left off when the signal occurred.
+
+For some system calls, if a signal is caught while the call is executing and the call is 
+prematurely terminated, the call is automatically restarted.  
+Any handler installed with signal(3) will have the SA_RESTART flag set, 
+meaning that any restartable system call will not return on receipt of a signal.  
+
+The affected system calls include read(2), write(2), sendto(2), recvfrom(2), sendmsg(2), 
+and recvmsg(2) on a communications channel or a low speed device and during a ioctl(2) or wait(2).
+However, calls that have already committed are not restarted, but instead return a partial success
+(for example, a short read count).  
+These semantics could be changed with siginterrupt(3).
+     
+See sigaction(2) for a list of functions that are considered safe for use in signal handlers.
+
+The previous action is returned on a successful call.  
+Otherwise, SIG_ERR is returned and the global variable errno is set to indicate the error.
+     
+macOS 12.4                      June 7, 2004                      macOS 12.4
+```
+
+> - sigemptyset
+> - sigaddset
+```c
+int sigemptyset(sigset_t *set);
+int sigaddset(sigset_t *set, int signo);
+```
+```man
+These functions manipulate signal sets, stored in a sigset_t.
+sigemptyset() must be called for every object of type sigset_t before any other use of the object.
+
+The sigemptyset() function initializes a signal set to be empty.
+
+The sigaddset() function adds the specified signal signo to the signal set.
+
+These functions are provided as macros in the include file <signal.h>.
+Actual functions are available if their names are undefined (with #undef name).
+
+Functions return 0.
+
+macOS 12.4          June 4, 1993          macOS 12.4
+```
+
+> - sigaction
+```c
+#define sa_handler      __sigaction_u.__sa_handler
+#define sa_sigaction    __sigaction_u.__sa_sigaction
+
+int sigaction(int sig, const struct sigaction *restrict act, struct sigaction *restrict oact);
+```
+
+```man
+The system defines a set of signals that may be delivered to a process.
+Signal delivery resembles the occurrence of a hardware interrupt: 
+the signal is normally blocked from further occurrence, the current process
+context is saved, and a new one is built.  
+A process may specify a handler to which a signal is delivered, or specify that 
+a signal is to be ignored.
+A process may also specify that a default action is to be taken by the
+system when a signal occurs.  
+A signal may also be blocked, in which case its delivery is postponed until it is unblocked.  
+The action to be taken on delivery is determined at the time of delivery.  
+Normally, signal handlers execute on the current stack of the process.  
+This may be changed, on a per-handler basis, so that signals are taken on a special signal stack.
+
+The sigaction() system call assigns an action for a signal specified by sig.  
+If act is non-zero, it specifies an action (SIG_DFL, SIG_IGN, or a handler routine) and mask 
+to be used when delivering the specified signal.
+If oact is non-zero, the previous handling information for the signal is returned to the user.
+
+Options may be specified by setting sa_flags.  The meaning of the various bits is as follows:
+
+           (...)
+
+           SA_NODEFER      If this bit is set, further occurrences of the
+                           delivered signal are not masked during the execution
+                           of the handler.
+
+           SA_RESETHAND    If this bit is set, the handler is reset back to
+                           SIG_DFL at the moment the signal is delivered.
+
+           SA_RESTART      See paragraph below.
+           
+           SA_SIGINFO      If this bit is set, the handler function is assumed
+                           to be pointed to by the sa_sigaction member of struct
+                           sigaction and should match the prototype shown above
+                           or as below in EXAMPLES.  This bit should not be set
+                           when assigning SIG_DFL or SIG_IGN.
+                           
+If a signal is caught during the system calls listed below, the call may be
+forced to terminate with the error EINTR, the call may return with a data
+transfer shorter than requested, or the call may be restarted.  
+Restart of pending calls is requested by setting the SA_RESTART bit in sa_flags.  
+The affected system calls include (...), write(2) and (...) on a communications channel or a
+slow device (such as a terminal, but not a regular file) and during a wait(2) or (...).  
+However, calls that have already committed are not restarted, but instead return a partial success 
+(for example, a short read count).
+
+NOTE
+     The sa_mask field specified in act is not allowed to block SIGKILL or
+     SIGSTOP.  Any attempt to do so will be silently ignored.
+
+     The following functions are either reentrant or not interruptible by
+     signals and are async-signal safe.  Therefore applications may invoke them,
+     without restriction, from signal-catching functions:
+
+     Base Interfaces:
+
+     (...), getpid(), (...), kill(), (...), pause(), (...), sigaction(), sigaddset(), (...),
+     sigemptyset(), (...), signal(), (...), sleep(), (...), wait(), (...), write().
+
+     Realtime Interfaces:
+
+     aio_error(), sigpause(), aio_return(), aio_suspend(), sem_post(), sigset().
+
+     ANSI C Interfaces:
+
+     strcpy(), strcat(), strncpy(), strncat(), and perhaps some others.
+     
+     Extension Interfaces:
+
+     strlcpy(), strlcat().
+
+     All functions not in the above lists are considered to be unsafe with
+     respect to signals.  That is to say, the behaviour of such functions when
+     called from a signal handler is undefined.  In general though, signal
+     handlers should do little more than set a flag; most other actions are not
+     safe.
+
+     Also, it is good practice to make a copy of the global variable errno and
+     restore it before returning from the signal handler.  This protects against
+     the side effect of errno being set by functions called from inside the
+     signal handler.
+```
+> - kill
+> - getpid
+> - malloc
+> - free
+> - pause
+> - sleep
+> - usleep
+> - exit
+
+
 
 # Considerations about the [subject](pdf/42cursus_Minitalk_v2.pdf)
 
