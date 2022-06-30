@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/29 12:29:32 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/30 11:13:27 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,12 @@
   - Checksum?
 */
 
-/*
-  Function catches the user keyboard (CTRL+C == SIGINT == 2)
-  prints a message and exits the program
-*/
-void	server_show_user_ended(void);
+		/*
+	if (num == SIGINT)
+	{
+		ft_printf("\nserver: interrupted by user\n");
+		exit(EXIT_USER_INTERACTION);
+	}*/
 
 /*
   Function catches signals received from client that represents the status 
@@ -42,29 +43,41 @@ void	server_show_user_ended(void);
 */
 void	server_handler(int num, siginfo_t *info, void *context)
 {
-	static int	bits_received;
-	static int	char_received;
 	size_t		client_pid;
+	static int	bits_received;
+	static int	info_received;
+	static char	flag_length_received;
+	static char	*message;
 
+	usleep(WAIT_US);
 	(void)info;
 	(void)context;
 	client_pid = info->si_pid;
 	if (bits_received == 0)
-		char_received = 0;
-	if (num == SIGINT)
+		info_received = 0;
+	else if (num == BIT_1_ON && flag_length_received == 0)
+		info_received |= 1 << (((sizeof(int) * 4) - 1) - bits_received);
+	else if (num == BIT_1_ON && flag_length_received == 1)
+		info_received |= 1 << (7 - bits_received);
+	if (++bits_received == sizeof(int) * 4 && flag_length_received == 0)
 	{
-		ft_printf("\nserver ended: user instruction\n");
-		exit(EXIT_USER_INTERACTION);
-	}
-	if (num == BIT_1_ON)
-		char_received |= 1 << (7 - bits_received);
-	if (++bits_received == 8)
-	{
-		ft_printf("%c", char_received);
+		flag_length_received = 1;
+		ft_printf("Length of message = %d\n", info_received);
 		bits_received = 0;
-		char_received = 0;
+		info_received = 0;
 	}
-	usleep(WAIT_US);
+	else if (bits_received == 8 && flag_length_received == 1)
+	{
+		ft_printf("%c", info_received);
+		if (info_received == '\0')
+		{
+
+			kill(client_pid, SERVER_REPLY_NULL_TERMINATOR);
+		}
+		bits_received = 0;
+		info_received = 0;
+		//flag_length_received = 0;
+	}
 	kill(client_pid, SERVER_REPLY_ACK);
 }
 
@@ -78,20 +91,14 @@ int	main(void)
 {
 	struct sigaction	s_server;
 
-	s_server.sa_sigaction = server_handler;
 	sigemptyset(&s_server.sa_mask);
+	s_server.sa_sigaction = server_handler;
 	s_server.sa_flags = SA_SIGINFO;
-	if (sigaction(BIT_0_OFF, &s_server, NULL) < 0
-		|| sigaction(BIT_1_ON, &s_server, NULL) < 0
-		|| sigaction(SIGINT, &s_server, NULL) < 0)
-	{
-		ft_printf("server error: sigaction()");
-		exit(EXIT_FAILURE);
-	}
-	ft_printf("server started: [PID = %d]\n", getpid());
+	configure_sigaction_signals(&s_server);
+	ft_printf("server [PID = %d]: listening for messages\n", getpid());
 	while (1)
 	{
 		pause();
 	}
-	exit(EXIT_SUCCESS);
+	return (EXIT_SUCCESS);
 }

@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:57:25 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/06/29 10:48:38 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/06/30 10:42:16 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,13 @@
 # include <stdlib.h> // exit()
 //# include <stdio.h> // For testing
 # include <sys/signal.h> // remove
+# include <stdbool.h> // bool type
 
-# define BIT_0_OFF				SIGUSR1
-# define BIT_1_ON				SIGUSR2
-# define SERVER_REPLY_ACK		SIGUSR1
-# define SERVER_REPLY_ERROR		SIGUSR2
-# define EXIT_USER_INTERACTION	SIGINT // Using value as SIGINT (CTRL+C), 2
+# define BIT_0_OFF						SIGUSR1
+# define BIT_1_ON						SIGUSR2
+# define SERVER_REPLY_ACK				SIGUSR1
+# define SERVER_REPLY_NULL_TERMINATOR	SIGUSR2
+# define EXIT_USER_INTERACTION			SIGINT // Using value as SIGINT (CTRL+C), 2
 
 /*
   From opensource.apple.com/source/xnu/xnu-6153.141.1/bsd/sys/proc_internal.h
@@ -38,5 +39,11 @@
 # define PID_MAX				99999
 
 # define WAIT_US				100 //usleep(WAIT_US)
+
+
+void	configure_sigaction_signals(struct sigaction *sa);
+void	send_byte(pid_t pid, char c);
+void	send_bit(pid_t pid, char bit);
+void	send_int(pid_t pid, int num);
 
 #endif

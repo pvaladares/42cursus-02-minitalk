@@ -6,7 +6,7 @@
 #    By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/07 18:12:40 by pvaladar          #+#    #+#              #
-#    Updated: 2022/06/28 23:55:13 by pvaladar         ###   ########.fr        #
+#    Updated: 2022/06/29 18:07:16 by pvaladar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,8 +26,8 @@ NAME_CLIENT	= client
 #	MANDATORY PART
 # =============================================================================
 
-SRC_SERVER	=	${NAME_SERVER:%=%.c}
-SRC_CLIENT	=	${NAME_CLIENT:%=%.c}
+SRC_SERVER	=	server.c minitalk.c
+SRC_CLIENT	=	client.c minitalk.c
 
 OBJ_SERVER	=	${SRC_SERVER:.c=.o}
 OBJ_CLIENT	=	${SRC_CLIENT:.c=.o}
