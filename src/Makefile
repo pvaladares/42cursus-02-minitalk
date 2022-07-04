@@ -6,7 +6,7 @@
 #    By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/07 18:12:40 by pvaladar          #+#    #+#              #
-#    Updated: 2022/07/04 16:16:16 by pvaladar         ###   ########.fr        #
+#    Updated: 2022/07/04 16:54:13 by pvaladar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@
 # =============================================================================
 
 CC			= cc
-CFLAGS	= -Wall -Wextra -Werror -g -fsanitize=address
+CFLAGS		= -Wall -Wextra -Werror -g -fsanitize=address
 
 RM			= /bin/rm -f
 
@@ -33,8 +33,9 @@ OBJ_SERVER	=	${SRC_SERVER:.c=.o}
 OBJ_CLIENT	=	${SRC_CLIENT:.c=.o}
 
 INCLUDES = -I . -I libft
-LINKERS =  -L libft
 
+LIBFT = ./Libft/libft.a
+LIBFT_PATH = ./Libft
 
 # =============================================================================
 #	RULES
@@ -45,13 +46,15 @@ LINKERS =  -L libft
 	
 all		:	$(NAME_SERVER) $(NAME_CLIENT)
 
-$(NAME_SERVER)	:	$(OBJ_SERVER)
-#					$(CC) $(CFLAGS) $(LINKERS) $(OBJ_SERVER) -o $(NAME_SERVER)
-					$(CC) $(CFLAGS) libft/libft.a $(SRC_SERVER) -o $(NAME_SERVER)
+$(NAME_SERVER)	:	$(OBJ_SERVER) $(LIBFT)
+					$(CC) $(CFLAGS) $(LIBFT) $(SRC_SERVER) -o $(NAME_SERVER)
 
-$(NAME_CLIENT)	:	$(OBJ_CLIENT)
-#					$(CC) $(CFLAGS) $(LINKERS) $(OBJ_CLIENT) -o $(NAME_CLIENT)
-					$(CC) $(CFLAGS) libft/libft.a $(SRC_CLIENT) -o $(NAME_CLIENT)
+$(NAME_CLIENT)	:	$(OBJ_CLIENT) $(LIBFT)
+					$(CC) $(CFLAGS) $(LIBFT) $(SRC_CLIENT) -o $(NAME_CLIENT)
+
+# Make libft
+$(LIBFT):	$(shell make -C $(LIBFT_PATH) -q libft.a)
+			make -C $(LIBFT_PATH)
 
 # Clean object files (*.o)
 clean	:	
@@ -67,8 +70,7 @@ re		:	fclean all
 
 # "To turn in bonuses to your project, you must include a rule bonus to your Makefile"
 # "Makefile must not relink" (https://42born2code.slack.com/archives/CMX2R5JSW/p1634727271200100?thread_ts=1634724450.199600&cid=CMX2R5JSW)
-bonus	:	$(OBJS_BONUS) fclean
-			@make OBJS_MAND="$(OBJS_MAND) $(OBJS_BONUS)" $(NAME)
+bonus	:	all
 
 rebonus	:	fclean bonus
 
