@@ -6,7 +6,7 @@
 #    By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/07 18:12:40 by pvaladar          #+#    #+#              #
-#    Updated: 2022/07/04 11:20:43 by pvaladar         ###   ########.fr        #
+#    Updated: 2022/07/04 16:16:16 by pvaladar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@
 # =============================================================================
 
 CC			= cc
-CFLAGS	= -Wall -Wextra -Werror -g -fsanitize=address,undefined
+CFLAGS	= -Wall -Wextra -Werror -g -fsanitize=address
 
 RM			= /bin/rm -f
 
@@ -26,14 +26,14 @@ NAME_CLIENT	= client
 #	MANDATORY PART
 # =============================================================================
 
-SRC_SERVER	=	server.c minitalk.c minitalk_utils.c
-SRC_CLIENT	=	client.c minitalk.c minitalk_utils.c
+SRC_SERVER	=	server.c minitalk.c
+SRC_CLIENT	=	client.c minitalk.c
 
 OBJ_SERVER	=	${SRC_SERVER:.c=.o}
 OBJ_CLIENT	=	${SRC_CLIENT:.c=.o}
 
-INCLUDES = -I . -I libft #-I printf
-LINKERS =  -L libft #-L printf
+INCLUDES = -I . -I libft
+LINKERS =  -L libft
 
 
 # =============================================================================

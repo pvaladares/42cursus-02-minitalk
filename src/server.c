@@ -6,36 +6,60 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/07/04 15:27:43 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/07/04 16:14:56 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
-void	reset_values(int *bits_received, int *info_received)
-{
-	if (*bits_received == 0)
-		*info_received = 0;
-}
-
-void	process_string_length(t_protocol *t_server, int *i, pid_t client_pid)
+/*
+  Function checks if the string message is finished.
+  In case the null terminator string is received, prints the whole string
+  and frees from heap memory the string, and informs client that message was
+  received (client will then exit), with send_bit() without signal expecting 
+  to be received back from client
+*/
+static void	is_message_finished(t_protocol *t_server, int *i, pid_t client_pid)
 {
 	if (t_server->bits == 8 && t_server->flag == 1)
 	{
 		t_server->message[*i] = t_server->data;
-		*i = *i + 1;
+		(*i)++;
 		if (t_server->data == '\0')
 		{
-			ft_putstr("\e[92mreceived message = [");
-			ft_putstr(t_server->message);
-			ft_putstr("]\n\e[0m");
+			ft_putstr_fd("\e[92mreceived message = [", STDOUT_FILENO);
+			ft_putstr_fd(t_server->message, STDOUT_FILENO);
+			ft_putstr_fd("]\n\e[0m", STDOUT_FILENO);
 			free(t_server->message);
 			t_server->message = NULL;
 			t_server->flag = 0;
 			*i = 0;
-			t_server->bits = 0;
 			send_bit(client_pid, 1, 0);
 		}
+		t_server->bits = 0;
+	}
+}
+
+/*
+  Function checks if the string length bits are done
+  If yes, the length is printed to stdout and used to allocated in the 
+  heap memory a string with the exact size received (plus the null terminator)
+*/
+static void	is_str_length_finished(t_protocol *t_server)
+{
+	if (t_server->bits == sizeof(int) * 8 && t_server->flag == 0)
+	{
+		t_server->flag = 1;
+		ft_putstr_fd("\e[92mreceived length = [", STDOUT_FILENO);
+		ft_putnbr_fd(t_server->data, STDOUT_FILENO);
+		ft_putstr_fd("]\n\e[0m", STDOUT_FILENO);
+		t_server->message = ft_calloc(t_server->data + 1, sizeof(char));
+		if (t_server->message == NULL)
+		{
+			ft_putstr_fd("\e[31m## error - ft_calloc() ##\n\e[0m", STDOUT_FILENO);
+			exit(EXIT_FAILURE);
+		}
+		t_server->message[t_server->data] = '\0';
 		t_server->bits = 0;
 	}
 }
@@ -48,7 +72,7 @@ void	process_string_length(t_protocol *t_server, int *i, pid_t client_pid)
   For each bit received from client, the server sends an ACK signal
   (then the client should only send the next bit after this ACK signal)
 */
-void	server_handler(int num, siginfo_t *info, void *context)
+static void	server_handler(int num, siginfo_t *info, void *context)
 {
 	static t_protocol	t_server;
 	static int			i;
@@ -56,28 +80,15 @@ void	server_handler(int num, siginfo_t *info, void *context)
 	usleep(WAIT_US);
 	(void)context;
 	(void)info;
-	reset_values(&t_server.bits, &t_server.data);
+	if (t_server.bits == 0)
+		t_server.data = 0;
 	if (num == SIGUSR2 && t_server.flag == 0)
 		t_server.data |= 1 << (((sizeof(int) * 8) - 1) - t_server.bits);
 	else if (num == SIGUSR2 && t_server.flag == 1)
 		t_server.data |= 1 << (((sizeof(char) * 8) - 1) - t_server.bits);
 	t_server.bits++;
-	process_string_length(&t_server, &i, info->si_pid);
-	if (t_server.bits == sizeof(int) * 8 && t_server.flag == 0)
-	{
-		t_server.flag = 1;
-		ft_putstr("\e[92mreceived length = [");
-		ft_putnbr(t_server.data);
-		ft_putstr("]\n\e[0m");
-		t_server.message = ft_calloc(t_server.data + 1, sizeof(char));
-		if (t_server.message == NULL)
-		{
-			ft_putstr("\e[31m## error - ft_calloc() ##\n\e[0m");
-			exit(EXIT_FAILURE);
-		}
-		t_server.message[t_server.data] = '\0';
-		t_server.bits = 0;
-	}
+	is_message_finished(&t_server, &i, info->si_pid);
+	is_str_length_finished(&t_server);
 	send_bit(info->si_pid, 0, 0);
 }
 
@@ -85,7 +96,7 @@ void	server_handler(int num, siginfo_t *info, void *context)
   This program (server) prints to stdout the PID process and keeps
   listening for incoming message transmissions
   
-  Each client should the following sequence:
+  Each client should use the following sequence:
          (int)              (char)               (char)
     length of message -> regular chars -> null string terminator char
 
