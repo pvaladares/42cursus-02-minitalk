@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/07/04 11:49:16 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/07/04 15:07:29 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,51 +28,48 @@ void	reset_values(int *bits_received, int *info_received)
 */
 void	server_handler(int num, siginfo_t *info, void *context)
 {
-	static int	bits_received;
-	static int	data_received;
-	static char	flag_length_received;
-	static char	*message;
-	static int	i;
+	static t_protocol	t_server;
+	static int			i;
 
 	usleep(WAIT_US);
 	(void)context;
-	reset_values(&bits_received, &data_received);
-	if (num == SIGUSR2 && flag_length_received == 0)
-		data_received |= 1 << (((sizeof(int) * 8) - 1) - bits_received);
-	else if (num == SIGUSR2 && flag_length_received == 1)
-		data_received |= 1 << (((sizeof(char) * 8) - 1) - bits_received);
-	bits_received++;
-	if (bits_received == 8 && flag_length_received == 1)
+	reset_values(&t_server.bits_received, &t_server.data_received);
+	if (num == SIGUSR2 && t_server.flag_length_received == 0)
+		t_server.data_received |= 1 << (((sizeof(int) * 8) - 1) - t_server.bits_received);
+	else if (num == SIGUSR2 && t_server.flag_length_received == 1)
+		t_server.data_received |= 1 << (((sizeof(char) * 8) - 1) - t_server.bits_received);
+	t_server.bits_received++;
+	if (t_server.bits_received == 8 && t_server.flag_length_received == 1)
 	{
-		message[i++] = data_received;
-		if (data_received == '\0')
+		t_server.message[i++] = t_server.data_received;
+		if (t_server.data_received == '\0')
 		{
 			ft_putstr("\e[92mreceived message = [");
-			ft_putstr(message);
+			ft_putstr(t_server.message);
 			ft_putstr("]\n\e[0m");
-			free(message);
-			message = NULL;
-			flag_length_received = 0;
+			free(t_server.message);
+			t_server.message = NULL;
+			t_server.flag_length_received = 0;
 			i = 0;
-			bits_received = 0;
+			t_server.bits_received = 0;
 			send_bit(info->si_pid, 1, 0);
 		}
-		bits_received = 0;
+		t_server.bits_received = 0;
 	}
-	if (bits_received == sizeof(int) * 8 && flag_length_received == 0)
+	if (t_server.bits_received == sizeof(int) * 8 && t_server.flag_length_received == 0)
 	{
-		flag_length_received = 1;
+		t_server.flag_length_received = 1;
 		ft_putstr("\e[92mreceived length = [");
-		ft_putnbr(data_received);
+		ft_putnbr(t_server.data_received);
 		ft_putstr("]\n\e[0m");
-		message = ft_calloc(data_received + 1, sizeof(char));
-		if (message == NULL)
+		t_server.message = ft_calloc(t_server.data_received + 1, sizeof(char));
+		if (t_server.message == NULL)
 		{
 			ft_putstr("\e[31m## error - ft_calloc() ##\n\e[0m");
 			exit(EXIT_FAILURE);
 		}
-		message[data_received] = '\0';
-		bits_received = 0;
+		t_server.message[t_server.data_received] = '\0';
+		t_server.bits_received = 0;
 	}
 	send_bit(info->si_pid, 0, 0);
 }
