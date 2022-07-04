@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/07/04 19:09:15 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/07/04 20:00:03 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,8 @@ static void	server_handler(int num, siginfo_t *info, void *context)
 	else if (num == SIGUSR2 && t_server.flag == 1)
 		t_server.data |= 1 << (((sizeof(char) * 8) - 1) - t_server.bits);
 	t_server.bits++;
-	server_is_message_finished(&t_server, &i, info->si_pid);
 	server_is_str_length_finished(&t_server);
+	server_is_message_finished(&t_server, &i, info->si_pid);
 	send_bit(info->si_pid, 0, 0);
 }
 
