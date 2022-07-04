@@ -1,15 +1,17 @@
 # Table of Contents
 - [1 - Goal](#1---goal)
 - [2 - Analysing the subject](#2---analysing-the-subject)
-           - [2.1 - Requirements](#21---requirements)
-           
-           - [2.2 - Note #1 - Display a string, not char by char](#22---note-1---display-a-string-not-char-by-char)
-           - 2.3 - Note #2 - Communication between server and client (two way channel)
-           - 2.4 - Note #3 - 
-- 3 - Implementation
-           - 3.1 - Allowed functions
-                      - 3.1.1 - Libft
-                      - 3.1.2 - Other functions
+	- [2.1 - Requirements](#21---requirements)
+	- [2.2 - Note #1 - Display a string, not char by char](#22---note-1---display-a-string-not-char-by-char)
+	- [2.3 - Note #2 - Communication between server and client (two way channel)](#23---note-2---communication-between-server-and-client-two-way-channel)
+- [3 - Implementation](#3---implementation)
+	- [3.1 - Allowed functions](#31---allowed-functions)
+		- [3.1.1 - Libft](#311---libft)
+		- [3.1.2 - Other functions](#312---other-functions)
+- [4 - Testing](#4---testing)
+	- [4.1 - Testers](#41---testers)
+	- [4.2 - Result](#42---result)
+- [5 - Resources](#5---resources)
 
 
 # 1 - Goal
@@ -49,7 +51,7 @@ Researching about the theme, two options arise:
 - the other option would be to implement a feedback loop so whenever client sends a char to server, it waits till server sends back a ACK signal informing client that the next bit can be sent. This later solution should be a lot quicker since there would be no delay function. This solution is aligned with the bonus: `The server acknowledges every message received by sending back a signal to the client.`
 
 
-## 3 - Implementation
+# 3 - Implementation
 
 ## 3.1 - Allowed functions
 
@@ -231,38 +233,8 @@ NOTE
      signal handler.
 ```
 > - kill
-> - getpid
-> - malloc
-> - free
-> - pause
-> - sleep
-> - usleep
-> - exit
-```man
-DESCRIPTION
-     The exit() function terminates a process.
 
-     Before termination, exit() performs the following functions in the order
-     listed:
-
-           1.   Call the functions registered with the atexit(3) function, in
-                the reverse order of their registration.
-
-           2.   Flush all open output streams.
-
-           3.   Close all open streams.
-
-           4.   Unlink all files created with the tmpfile(3) function.
-
-     Function make the low-order eight bits of the status argument available to 
-     a parent process which has called a wait(2)-family function.
-     
-     The C Standard (ISO/IEC 9899:1999 (“ISO C99”)) defines the values 0,
-     EXIT_SUCCESS, and EXIT_FAILURE as possible values of status.
-```
-
-
-## Using `kill()` to check the PID server input
+Using `kill()` to check the PID server input
 
 ```man
 DESCRIPTION
@@ -299,18 +271,88 @@ else if (kill(ft_atoi(argv[1]), 0) < 0)
              sending the signal.  No error is returned if any process could be
              signaled.
 ```         
-             
+    
+
+> - getpid
+
+```c
+pid_t getpid(void);
+```
+```man
+DESCRIPTION
+     getpid() returns the process ID of the calling process.  The ID is
+     guaranteed to be unique and is useful for constructing temporary file
+     names.
+```
+
+> - malloc
+> - free
+> - pause
+```c
+int pause(void);
+```
+```man
+DESCRIPTION
+     The pause() function causes the calling thread to pause until a signal is
+     received from either the kill(2) function or an interval timer.  (See
+     setitimer(2).) Upon termination of a signal handler started during a
+     pause(), the pause() call will return.
+```
+> - sleep
+> - usleep
+```c
+int usleep(useconds_t microseconds);
+```
+```man
+DESCRIPTION
+     The usleep() function suspends execution of the calling thread until either
+     microseconds have elapsed or a signal is delivered to the
+     thread and its action is to invoke a signal-catching function or to
+     terminate the process.  System activity or limitations may lengthen the
+     sleep by an indeterminate amount.
+
+     This function is implemented using nanosleep(2) by pausing for microseconds
+     microseconds or until a signal occurs.  Consequently, in this
+     implementation, sleeping has no effect on the state of process timers, and
+     there is no special handling for SIGALRM.  Also, this implementation does
+     not put a limit on the value of microseconds (other than that limited by
+     the size of the useconds_t type); some other platforms require it to be
+     less than one million.
+```
+> - exit
+```man
+DESCRIPTION
+     The exit() function terminates a process.
+
+     Before termination, exit() performs the following functions in the order
+     listed:
+
+           1.   Call the functions registered with the atexit(3) function, in
+                the reverse order of their registration.
+
+           2.   Flush all open output streams.
+
+           3.   Close all open streams.
+
+           4.   Unlink all files created with the tmpfile(3) function.
+
+     Function make the low-order eight bits of the status argument available to 
+     a parent process which has called a wait(2)-family function.
+     
+     The C Standard (ISO/IEC 9899:1999 (“ISO C99”)) defines the values 0,
+     EXIT_SUCCESS, and EXIT_FAILURE as possible values of status.
+```
 
 
-# Testing
+# 4 - Testing
 
-## Testers
+## 4.1 - Testers
 - [xicodomingues / francinette](https://github.com/xicodomingues/francinette)
   
-## Result
+## 4.2 - Result
  ![minitalk francinette result](img/minitalk_tester.gif)
 
-# Resources
+# 5 - Resources
 - [Sending and Handling Signals in C (kill, signal, sigaction)](https://www.youtube.com/watch?v=83M5-NPDeWs)
 - [Communicating between processes using signals](https://www.youtube.com/watch?v=PErrlOx3LYE)
 - [Good reading about how to approach the project](https://github.com/mlanca-c/Minitalk/wiki)
