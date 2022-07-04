@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 14:01:45 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/07/04 15:49:21 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/07/04 23:56:59 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ int	main(int argc, char **argv)
 		return (EXIT_FAILURE);
 	}
 	sigemptyset(&s_client.sa_mask);
-	s_client.sa_flags = SA_RESTART | SA_NODEFER;
+	s_client.sa_flags = SA_RESTART;
 	s_client.sa_handler = client_handler;
 	configure_sigaction_signals(&s_client);
 	ft_putstr_fd("\e[92mclient [PID = ", STDOUT_FILENO);

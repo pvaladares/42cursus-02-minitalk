@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:56:24 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/07/04 20:00:03 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/07/04 23:56:50 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ int	main(void)
 
 	sigemptyset(&s_server.sa_mask);
 	s_server.sa_sigaction = server_handler;
-	s_server.sa_flags = SA_SIGINFO | SA_RESTART | SA_NODEFER;
+	s_server.sa_flags = SA_SIGINFO | SA_RESTART;
 	configure_sigaction_signals(&s_server);
 	ft_putstr_fd("\e[92mserver [PID = ", STDOUT_FILENO);
 	ft_putnbr_fd(getpid(), STDOUT_FILENO);
