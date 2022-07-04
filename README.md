@@ -1,7 +1,102 @@
-# 42cursus-02-minitalk
+# Table of Contents
+- [Goal](#goal)
+- Analysing the subject
+           - Requirements
+           - Allowed Libraries](#allowed-libraries)
+- Notes on the implementation
+- Testing
+- Resources
+
+# Goal
 The purpose of this project is to code a small data exchange program using UNIX signals.
 
-# Allowed libraries
+# Analysing the [subject](pdf/42cursus_Minitalk_v2.pdf)
+
+## Requirements
+
+>You must create a communication program in the form of a client and a server.
+>- The server must be started first. After its launch, it has to print its PID.
+>- The client takes two parameters: 1) The server PID 2) The string to send.
+>- The client must send the string passed as a parameter to the server. Once the string has been received, the server must print it.
+>- The server has to display the string pretty quickly. Quickly means that if you think it takes too long, then it is probably too long.
+>- Your server should be able to receive strings from several clients in a row without needing to restart.
+>- The communication between your client and your server has to be done only using UNIX signals.
+>- You can only use these two signals: SIGUSR1 and SIGUSR2.
+
+## Note 1 - Display a string, not char by char
+
+To be noted that as per the subject, it cannot be displayed char-by-char on the server-side, it must be displayed the whole message received instead:
+> Once the string has been received, the server must print it.
+
+Therefore, it must be known in advance the length of the message so the server can allocate in memory as required
+- `ft_strlen()`, to know the length of the message to be sent from client to server, and send it to server in advance for proper memory allocation
+- `ft_calloc()`, in order to save the chars being received till the string is completed received on server side, so it can be then displayed
+
+## Note 2 - Communication between server and client (two way channel)
+
+Implementing the communication between client/server should be fast.
+
+>- The server has to display the string pretty quickly. Quickly means that if you think it takes too long, then it is probably too long.
+
+Researching about the theme, it was found two options could be used: using a delay function like `sleep()` or `usleep()` avoiding the communication of signals back and forward between server/client, which would impose a delay per char, since we would be sending in blind way (no feedback loop) chars from client to server. The other option would be to implement a feedback loop so whenever client sends a char to server, it waits till server sends back a ACK signal informing client that the next bit can be sent. This later solution should be a lot quicker since there would be no delay function.
+
+
+## Note 3 - `PID_MAX`
+
+The short version, is that there is no need to think about signals being sent from different clients in parallel. I initially read/understood it should be this way... but subject clearly states `several clients in a row`, not paralell.
+
+Anyhow, below
+
+From subject it can be read the following:
+> Your server should be able to receive strings from several clients in a row without needing to restart.
+
+It may be interpretated a row means that it should be sequential, meaning a new client should only start sending a message, after the current client had finished.
+Something like the following:
+
+- server is started and shows its PID
+- client #1 is started and sends a message to server
+- after server displays the message, client #2 is started and sends a message to server
+
+This one I though it would be hard, since I was thinking about the bonus implementation of get_next_line and creating variables with array with index being the process PID.
+
+This led me to research about the PID maximum value on MacOS that should be less than `99999`. See below some nice articles and information about its value (just for fun).
+
+From [here](https://opensource.apple.com/source/xnu/xnu-6153.141.1/bsd/sys/proc_internal.h.auto.html)
+```c
+/*
+ * We use process IDs <= PID_MAX; PID_MAX + 1 must also fit in a pid_t,
+ * as it is used to represent "no process group".
+ */
+ 
+#define PID_MAX         99999
+```
+
+Testing locally with bash script
+```bash
+#!/bin/bash
+
+pid=0
+for i in {1..100000}; do
+  : &
+  if [ $! -lt $pid ]; then
+    echo "Min pid: $!"
+    echo "Max pid: $pid"
+    break
+  fi
+  pid=$!
+done
+```
+The resulting confirms the [original post](https://apple.stackexchange.com/questions/51119/whats-the-maximum-pid-for-mac-os-x/51124#51124))
+> Min pid: 100
+>
+> Max pid: 99998
+
+
+
+
+
+
+
 
 The subject states that [libft](https://github.com/pvaladares/42cursus-00-Libft) library can be used!
 > You can definitely use your libft.
@@ -13,12 +108,8 @@ Reading the subject it can be understood some functions included in the `libft` 
 >     - The string to send.
 - `ft_atoi()`, to convert the PID argument received from command line to integer type for further processing of signal processing, e.g.: `kill()`
 
-To be noted that as per the subject, it cannot be displayed char-by-char on the server-side, it must be displayed the whole message received instead:
-> Once the string has been received, the server must print it.
 
-Therefore, it must be known in advance the length of the message so the server can allocate in memory as required
-- `ft_strlen()`, to know the length of the message to be sent from client to server, and send it to server in advance for proper memory allocation
-- `ft_calloc()`, in order to save the chars being received till the string is completed received on server side, so it can be then displayed
+
 
 # Allowed functions
 
@@ -196,15 +287,6 @@ NOTE
 
 
 
-# Considerations about the [subject](pdf/42cursus_Minitalk_v2.pdf)
-
-
-https://apple.stackexchange.com/questions/51119/whats-the-maximum-pid-for-mac-os-x/51124#51124
-https://opensource.apple.com/source/xnu/xnu-6153.141.1/bsd/sys/proc_internal.h.auto.html
-
-
-
-
 ## Using `kill()` to check the PID server input
 
 ```man
@@ -244,48 +326,14 @@ if (kill(atoi(argv[1]), 0) < 0)
 ```         
              
 
-## `PID_MAX`
 
-From subject it can be read the following:
-> Your server should be able to receive strings from several clients in a row without needing to restart.
+# Testing
 
-It may be interpretated a row means that it should be sequential, meaning a new client should only start sending a message, after the current client had finished.
-Something like the following:
-
-- server is started and shows its PID
-- client #1 is started and sends a message to server
-- after server displays the message, client #2 is started and sends a message to server
-
-From [here](https://opensource.apple.com/source/xnu/xnu-6153.141.1/bsd/sys/proc_internal.h.auto.html)
-```c
-/*
- * We use process IDs <= PID_MAX; PID_MAX + 1 must also fit in a pid_t,
- * as it is used to represent "no process group".
- */
- 
-#define PID_MAX         99999
-```
-
-Testing locally with bash script
-```bash
-#!/bin/bash
-
-pid=0
-for i in {1..100000}; do
-  : &
-  if [ $! -lt $pid ]; then
-    echo "Min pid: $!"
-    echo "Max pid: $pid"
-    break
-  fi
-  pid=$!
-done
-```
-The resulting confirms the [original post](https://apple.stackexchange.com/questions/51119/whats-the-maximum-pid-for-mac-os-x/51124#51124))
-> Min pid: 100
->
-> Max pid: 99998
-
+## Testers
+- [xicodomingues / francinette](https://github.com/xicodomingues/francinette)
+  
+## Result
+ ![minitalk francinette result](img/minitalk_tester.gif)
 
 
 
