@@ -6,7 +6,7 @@
 /*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/23 13:57:25 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/07/04 15:07:15 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/07/04 15:12:51 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,19 @@ void	send_int(pid_t pid, int num);
 void	ft_putstr(char *s);
 void	ft_putnbr(int n);
 
+/*
+  Structure to handle the protocol between server-client
+  
+  bits : bits received
+  data : data received, can be an integer (length of message) or char
+  flag : 1 if length of message was received, else 0
+  message : message received
+*/
 typedef struct s_protocol
 {
-	int		bits_received;
-	int		data_received;
-	int		flag_length_received;
+	int		bits;
+	int		data;
+	int		flag;
 	char	*message;
 }			t_protocol;
 
