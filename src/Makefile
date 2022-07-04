@@ -6,7 +6,7 @@
 #    By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/07 18:12:40 by pvaladar          #+#    #+#              #
-#    Updated: 2022/06/30 11:26:19 by pvaladar         ###   ########.fr        #
+#    Updated: 2022/07/04 11:20:43 by pvaladar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,14 +26,14 @@ NAME_CLIENT	= client
 #	MANDATORY PART
 # =============================================================================
 
-SRC_SERVER	=	server.c minitalk.c
-SRC_CLIENT	=	client.c minitalk.c
+SRC_SERVER	=	server.c minitalk.c minitalk_utils.c
+SRC_CLIENT	=	client.c minitalk.c minitalk_utils.c
 
 OBJ_SERVER	=	${SRC_SERVER:.c=.o}
 OBJ_CLIENT	=	${SRC_CLIENT:.c=.o}
 
-INCLUDES = -I . -I libft -I printf
-LINKERS =  -L libft -L printf
+INCLUDES = -I . -I libft #-I printf
+LINKERS =  -L libft #-L printf
 
 
 # =============================================================================
@@ -47,11 +47,11 @@ all		:	$(NAME_SERVER) $(NAME_CLIENT)
 
 $(NAME_SERVER)	:	$(OBJ_SERVER)
 #					$(CC) $(CFLAGS) $(LINKERS) $(OBJ_SERVER) -o $(NAME_SERVER)
-					$(CC) $(CFLAGS) libft/libft.a printf/libftprintf.a $(SRC_SERVER) -o $(NAME_SERVER)
+					$(CC) $(CFLAGS) libft/libft.a $(SRC_SERVER) -o $(NAME_SERVER)
 
 $(NAME_CLIENT)	:	$(OBJ_CLIENT)
 #					$(CC) $(CFLAGS) $(LINKERS) $(OBJ_CLIENT) -o $(NAME_CLIENT)
-					$(CC) $(CFLAGS) libft/libft.a printf/libftprintf.a $(SRC_CLIENT) -o $(NAME_CLIENT)
+					$(CC) $(CFLAGS) libft/libft.a $(SRC_CLIENT) -o $(NAME_CLIENT)
 
 # Clean object files (*.o)
 clean	:	
