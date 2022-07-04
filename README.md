@@ -1,18 +1,23 @@
 # Table of Contents
-- [Goal](#goal)
-- Analysing the subject
-           - Requirements
-           - Allowed Libraries](#allowed-libraries)
-- Notes on the implementation
-- Testing
-- Resources
+- [1 - Goal](#1---goal)
+- [2 - Analysing the subject](#2---analysing-the-subject)
+           - [2.1 - Requirements](#21---requirements)
+           
+           - [2.2 - Note #1 - Display a string, not char by char](#22---note-1---display-a-string-not-char-by-char)
+           - 2.3 - Note #2 - Communication between server and client (two way channel)
+           - 2.4 - Note #3 - 
+- 3 - Implementation
+           - 3.1 - Allowed functions
+                      - 3.1.1 - Libft
+                      - 3.1.2 - Other functions
 
-# Goal
+
+# 1 - Goal
 The purpose of this project is to code a small data exchange program using UNIX signals.
 
-# Analysing the [subject](pdf/42cursus_Minitalk_v2.pdf)
+# 2 - Analysing the [subject](pdf/42cursus_Minitalk_v2.pdf)
 
-## Requirements
+## 2.1 - Requirements
 
 >You must create a communication program in the form of a client and a server.
 >- The server must be started first. After its launch, it has to print its PID.
@@ -23,80 +28,32 @@ The purpose of this project is to code a small data exchange program using UNIX 
 >- The communication between your client and your server has to be done only using UNIX signals.
 >- You can only use these two signals: SIGUSR1 and SIGUSR2.
 
-## Note 1 - Display a string, not char by char
+## 2.2 - Note #1 - Display a string, not char by char
 
 To be noted that as per the subject, it cannot be displayed char-by-char on the server-side, it must be displayed the whole message received instead:
 > Once the string has been received, the server must print it.
 
-Therefore, it must be known in advance the length of the message so the server can allocate in memory as required
-- `ft_strlen()`, to know the length of the message to be sent from client to server, and send it to server in advance for proper memory allocation
+Therefore, it must be known in advance the length of the message so the server can allocate memory in the heap as required.
+The following functions from `libft` could be used:
+- `ft_strlen()`, to know the length of the message to be sent from client to server
 - `ft_calloc()`, in order to save the chars being received till the string is completed received on server side, so it can be then displayed
 
-## Note 2 - Communication between server and client (two way channel)
-
-Implementing the communication between client/server should be fast.
+## 2.3 - Note #2 - Communication between server and client (two way channel)
 
 >- The server has to display the string pretty quickly. Quickly means that if you think it takes too long, then it is probably too long.
 
-Researching about the theme, it was found two options could be used: using a delay function like `sleep()` or `usleep()` avoiding the communication of signals back and forward between server/client, which would impose a delay per char, since we would be sending in blind way (no feedback loop) chars from client to server. The other option would be to implement a feedback loop so whenever client sends a char to server, it waits till server sends back a ACK signal informing client that the next bit can be sent. This later solution should be a lot quicker since there would be no delay function.
+Researching about the theme, two options arise: 
+
+- using a delay function like `sleep()` or `usleep()` avoiding the communication of signals back and forward between server/client, which would impose a delay per char, since we would be sending in blind way (no feedback loop) chars from client to server. 
+
+- the other option would be to implement a feedback loop so whenever client sends a char to server, it waits till server sends back a ACK signal informing client that the next bit can be sent. This later solution should be a lot quicker since there would be no delay function. This solution is aligned with the bonus: `The server acknowledges every message received by sending back a signal to the client.`
 
 
-## Note 3 - `PID_MAX`
+## 3 - Implementation
 
-The short version, is that there is no need to think about signals being sent from different clients in parallel. I initially read/understood it should be this way... but subject clearly states `several clients in a row`, not paralell.
+## 3.1 - Allowed functions
 
-Anyhow, below
-
-From subject it can be read the following:
-> Your server should be able to receive strings from several clients in a row without needing to restart.
-
-It may be interpretated a row means that it should be sequential, meaning a new client should only start sending a message, after the current client had finished.
-Something like the following:
-
-- server is started and shows its PID
-- client #1 is started and sends a message to server
-- after server displays the message, client #2 is started and sends a message to server
-
-This one I though it would be hard, since I was thinking about the bonus implementation of get_next_line and creating variables with array with index being the process PID.
-
-This led me to research about the PID maximum value on MacOS that should be less than `99999`. See below some nice articles and information about its value (just for fun).
-
-From [here](https://opensource.apple.com/source/xnu/xnu-6153.141.1/bsd/sys/proc_internal.h.auto.html)
-```c
-/*
- * We use process IDs <= PID_MAX; PID_MAX + 1 must also fit in a pid_t,
- * as it is used to represent "no process group".
- */
- 
-#define PID_MAX         99999
-```
-
-Testing locally with bash script
-```bash
-#!/bin/bash
-
-pid=0
-for i in {1..100000}; do
-  : &
-  if [ $! -lt $pid ]; then
-    echo "Min pid: $!"
-    echo "Max pid: $pid"
-    break
-  fi
-  pid=$!
-done
-```
-The resulting confirms the [original post](https://apple.stackexchange.com/questions/51119/whats-the-maximum-pid-for-mac-os-x/51124#51124))
-> Min pid: 100
->
-> Max pid: 99998
-
-
-
-
-
-
-
+### 3.1.1 - Libft
 
 The subject states that [libft](https://github.com/pvaladares/42cursus-00-Libft) library can be used!
 > You can definitely use your libft.
@@ -106,14 +63,11 @@ Reading the subject it can be understood some functions included in the `libft` 
 > - The client takes two parameters:
 >     - The server PID.
 >     - The string to send.
-- `ft_atoi()`, to convert the PID argument received from command line to integer type for further processing of signal processing, e.g.: `kill()`
+- `ft_atoi()`, to convert the PID argument received from command line to integer type for further processing of signal processing
 
+### 3.1.2 - Other functions
 
-
-
-# Allowed functions
-
-Below is made a brief analysis of other functions (in addition to the ones included in the `libft`) that can be used as per the subject.
+Below is made a brief analysis of other functions that can be used.
 
 > In order to complete the mandatory part, you are allowed to use the following functions:
 > - write
@@ -284,7 +238,28 @@ NOTE
 > - sleep
 > - usleep
 > - exit
+```man
+DESCRIPTION
+     The exit() function terminates a process.
 
+     Before termination, exit() performs the following functions in the order
+     listed:
+
+           1.   Call the functions registered with the atexit(3) function, in
+                the reverse order of their registration.
+
+           2.   Flush all open output streams.
+
+           3.   Close all open streams.
+
+           4.   Unlink all files created with the tmpfile(3) function.
+
+     Function make the low-order eight bits of the status argument available to 
+     a parent process which has called a wait(2)-family function.
+     
+     The C Standard (ISO/IEC 9899:1999 (“ISO C99”)) defines the values 0,
+     EXIT_SUCCESS, and EXIT_FAILURE as possible values of status.
+```
 
 
 ## Using `kill()` to check the PID server input
@@ -300,10 +275,10 @@ DESCRIPTION
   
 This is a nice finding to check the validity of the PID in a robust way, rather than just checking if all the chars are digits.
 ```c
-if (kill(atoi(argv[1]), 0) < 0)
+else if (kill(ft_atoi(argv[1]), 0) < 0)
 {
- ft_printf("client error: PID is invalid\n");
- exit(EXIT_FAILURE);
+	ft_putstr_fd("\e[31m## error - PID is invalid ##\n\e[0m", STDOUT_FILENO);
+	return (EXIT_FAILURE);
 }
 ```
   
@@ -334,8 +309,6 @@ if (kill(atoi(argv[1]), 0) < 0)
   
 ## Result
  ![minitalk francinette result](img/minitalk_tester.gif)
-
-
 
 # Resources
 - [Sending and Handling Signals in C (kill, signal, sigaction)](https://www.youtube.com/watch?v=83M5-NPDeWs)
