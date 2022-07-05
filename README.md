@@ -46,9 +46,12 @@ The following functions from `libft` could be used:
 
 Researching about the theme, two options arise: 
 
-- using a delay function like `sleep()` or `usleep()` avoiding the communication of signals back and forward between server/client, which would impose a delay per char, since we would be sending in blind way (no feedback loop) chars from client to server. 
+- using a delay function like `sleep()` or `usleep()` avoiding the communication of signals back and forward between server/client, which would impose a delay per char, since we would be sending in blind way (no feedback loop) chars from client to server. Depending on the delay set signals could queue.
 
 - the other option would be to implement a feedback loop so whenever client sends a char to server, it waits till server sends back a ACK signal informing client that the next bit can be sent. This later solution should be a lot quicker since there would be no delay function. This solution is aligned with the bonus: `The server acknowledges every message received by sending back a signal to the client.`
+
+As noted on the subject, there should not be sent signals blindly, making the two-way communication the best implementation.
+> Linux system does NOT queue signals when you already have pending signals of this type!  Bonus time?
 
 
 # 3 - Implementation
