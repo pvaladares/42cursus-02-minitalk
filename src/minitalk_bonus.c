@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minitalk_bonus.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pvaladar <pvaladar@student.42.fr>          +#+  +:+       +#+        */
+/*   By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/29 17:56:22 by pvaladar          #+#    #+#             */
-/*   Updated: 2022/07/20 16:18:33 by pvaladar         ###   ########.fr       */
+/*   Updated: 2022/07/20 16:35:08 by pvaladar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
