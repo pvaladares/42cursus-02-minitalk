@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: pvaladar <pvaladar@student.42lisboa.com>   +#+  +:+       +#+         #
+#    By: pvaladar <pvaladar@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/03/07 18:12:40 by pvaladar          #+#    #+#              #
-#    Updated: 2022/07/04 16:57:37 by pvaladar         ###   ########.fr        #
+#    Updated: 2022/07/20 16:24:45 by pvaladar         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,65 +14,66 @@
 #	GENERAL CONFIG & FLAGS
 # =============================================================================
 
-CC			= cc
-CFLAGS		= -Wall -Wextra -Werror -g -fsanitize=address
+# Program for compiling C programs
+CC := cc
 
-RM			= /bin/rm -f
+# Extra flags to give to the C compiler
+CFLAGS := -Wall -Wextra -Werror
 
-NAME_SERVER = server
-NAME_CLIENT	= client
+RM := /bin/rm -f
+
+NAME_SERVER := server
+NAME_CLIENT := client
 
 # =============================================================================
 #	MANDATORY PART
 # =============================================================================
 
-SRC_SERVER	=	server.c minitalk.c
-SRC_CLIENT	=	client.c minitalk.c
+SRC_SERVER := server.c minitalk.c
+SRC_CLIENT := client.c minitalk.c
 
-OBJ_SERVER	=	${SRC_SERVER:.c=.o}
-OBJ_CLIENT	=	${SRC_CLIENT:.c=.o}
+SRC_SERVER_BONUS := server_bonus.c minitalk_bonus.c
+SRC_CLIENT_BONUS := client_bonus.c minitalk_bonus.c
 
-INCLUDES = -I . -I libft
+INCLUDES := -I. -Ilibft
 
-LIBFT = ./Libft/libft.a
-LIBFT_PATH = ./Libft
+LIBFT := ./libft/libft.a
+LIBFT_PATH := ./libft
 
 # =============================================================================
 #	RULES
 # =============================================================================
 
-.c.o:
-	$(CC) $(FLAGS) $(INCLUDES) -c $< -o $(<:.c=.o)
-	
-all		:	$(NAME_SERVER) $(NAME_CLIENT)
+all: $(NAME_SERVER) $(NAME_CLIENT)
 
-$(NAME_SERVER)	:	$(OBJ_SERVER) $(LIBFT)
-					$(CC) $(CFLAGS) $(LIBFT) $(SRC_SERVER) -o $(NAME_SERVER)
+$(NAME_SERVER): $(LIBFT)
+	$(CC) $(CFLAGS) $(SRC_SERVER) $(LIBFT) -o $(NAME_SERVER)
 
-$(NAME_CLIENT)	:	$(OBJ_CLIENT) $(LIBFT)
-					$(CC) $(CFLAGS) $(LIBFT) $(SRC_CLIENT) -o $(NAME_CLIENT)
+$(NAME_CLIENT): $(LIBFT)
+	$(CC) $(CFLAGS) $(SRC_CLIENT) $(LIBFT) -o $(NAME_CLIENT)
 
 # Make libft
-$(LIBFT):	$(shell make -C $(LIBFT_PATH) -q libft.a)
-			make -C $(LIBFT_PATH)
+$(LIBFT): $(shell make -C $(LIBFT_PATH) -q libft.a)
+	make -C $(LIBFT_PATH)
 
-# Clean object files (*.o)
-clean	:	
-			$(RM) $(OBJ_SERVER) $(OBJ_CLIENT)
+# Clean object files (*.o) - not used on this project
+clean:
 
 # Clean object files (*.o) and the binary file
-fclean	:	clean
-			$(RM) $(NAME_SERVER) $(NAME_CLIENT)
+fclean: clean
+	$(RM) $(NAME_SERVER) $(NAME_CLIENT)
 
 # Clean object files (*.o) and the binary file; 
 # Then create the binary file again, and generate the library and index it
-re		:	fclean all
+re: fclean all
 
 # "To turn in bonuses to your project, you must include a rule bonus to your Makefile"
-# "Makefile must not relink" (https://42born2code.slack.com/archives/CMX2R5JSW/p1634727271200100?thread_ts=1634724450.199600&cid=CMX2R5JSW)
-bonus	:	all
+# "Makefile must not relink"
+bonus: $(LIBFT) fclean
+	$(CC) $(CFLAGS) $(SRC_SERVER_BONUS) $(LIBFT) -o $(NAME_SERVER)
+	$(CC) $(CFLAGS) $(SRC_CLIENT_BONUS) $(LIBFT) -o $(NAME_CLIENT)
 
-rebonus	:	fclean bonus
+rebonus: fclean bonus
 
 # .PHONY rule in order to avoid relinking
-.PHONY	:	all clean fclean re bonus rebonus
+.PHONY: all clean fclean re bonus rebonus
