@@ -36,7 +36,7 @@ The purpose of this project is to code a small data exchange program using UNIX 
 To be noted that as per the subject, it cannot be displayed char-by-char on the server-side, it must be displayed the whole message received instead:
 > Once the string has been received, the server must print it.
 
-Therefore, it must be known in advance the length of the message so the server can allocate memory in the heap as required.
+Therefore, it must be known in advance the length of the message so the server can allocate memory in the heap as required only once (best approach). Or alternatively, don't send the lenght and keep modifying the allocation in memory - joining a char to already received string - till receiving the last char (not so good approach since will have to repeat allocation for every new char received).
 The following functions from `libft` could be used:
 - `ft_strlen()`, to know the length of the message to be sent from client to server
 - `ft_calloc()`, in order to save the chars being received till the string is completed received on server side, so it can be then displayed
