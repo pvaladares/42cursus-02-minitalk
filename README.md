@@ -357,12 +357,15 @@ DESCRIPTION
  ![minitalk francinette result](img/minitalk_tester.gif)
 
 # 5 - Demo
+
+ ![minitalk demo](img/minitalk_demo.gif)
+
 - Below is a demonstration of the usage of the `server` and `client` programs
-	- Syntax usage error (incorrect number of arguments)
-	- Invalid PID server
-	- Empty message "" and '', transmission of empty message is received by server (length 0) and displayed
-	- Large message sent +1000 chars using [Lorem Ipsum site](https://lipsum.com/feed/html)
+	- Erro handling, e.g. incorrect number of arguments and invalid PID server
+	- Sending empty messages with `""` and `''` - transmission of empty message is received by server (length 0) and displayed
+	- Sending Large message sent +1000 chars using [Lorem Ipsum site](https://lipsum.com/feed/html)
 	- Receiving a message from a 2nd client after the 1st client (in sequence, not parallel, if it would be required by subject the same approach from [get_next_line bonus](https://github.com/pvaladares/42cursus-01-get_next_line) could be implemented with array and using the client PID as index)
+	- Client showing transmission log
 
 # 6 - Resources
 - [Sending and Handling Signals in C (kill, signal, sigaction)](https://www.youtube.com/watch?v=83M5-NPDeWs)
