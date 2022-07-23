@@ -364,7 +364,7 @@ DESCRIPTION
 	- Erro handling, e.g. incorrect number of arguments and invalid PID server
 	- Sending empty messages with `""` and `''` - transmission of empty message is received by server (length 0) and displayed
 	- Sending Large message sent +1000 chars using [Lorem Ipsum site](https://lipsum.com/feed/html)
-	- Receiving a message from a 2nd client after the 1st client (in sequence, not parallel, if it would be required by subject the same approach from [get_next_line bonus](https://github.com/pvaladares/42cursus-01-get_next_line) could be implemented with array and using the client PID as index)
+	- Receiving a message from a 2nd client after 1st client (in a row)
 	- Client showing transmission log
 
 # 6 - Resources
